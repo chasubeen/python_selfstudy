@@ -169,4 +169,4 @@ mean_squared_error(pipeline_pred,y_test) # 평가
 
 - 각 과정마다 최적의 회귀모형이 다른 것을 확인할 수 있었음
   - 4가지 버전 중 최적 회귀모형: ver3의 Polynomial Lasso(alpha = 100)
-  -  
+  - rmse = 2.5728
