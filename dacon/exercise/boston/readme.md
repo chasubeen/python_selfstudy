@@ -37,7 +37,8 @@
 
 ### **2-3. 로그 변환(Log Transformation)**
 - 원본 값에 **로그 함수**(```log1p()```)를 적용해 보다 정규분포에 가까운 형태로 값의 분포를 변경
-
+- 타겟 데이터(target data)의 경우 주로 로그 변환 수행
+  - 예측 후 원래 값으로 되돌리기 위해 ```np.expm1()``` 함수 활용 
 
 # **3. 평가 지표**
 - 회귀 모델의 성능을 평가하기 위해 여러 평가 지표들을 활용할 수 있음
@@ -45,8 +46,115 @@
 ### **3-1. MSE(Mean Squared Error)**
 - 예측값과 실제값의 차이의 제곱에 대하여 평균을 낸 값
 - $\frac{1}{n} \sum_{i = 1}^{n} (y_{i} - x_{i})^{2}$
+- 코드
+```Python
+from sklearn.metrics import mean_squared_error
 
+mse = mean_squared_error(pred,actual)
+```
 
+### **3-2. RMSE(Root Mean Squared Error)**
+- 예측값과 실제값의 차이에 대한 제곱에 대하여 평균을 낸 후 루트를 씌운 값
+- $\sqrt{(\frac{1}{n})\sum_{i=1}^{n}(y_{i} - x_{i})^{2}}$
+- 코드
+```Python
+import numpy as np
+from sklearn.metrics import mean_squared_error
 
+rmse = np.sqrt(mean_squared_error(pred,actual))
+```
 
+# **4. 회귀분석(Regression)**
+- 독립변수(x)로 종속변수(y)를 예측하는 것
+  - 독립변수: 변수의 변화 원인이 모형 밖에 있는 변수
+  - 종속변수: 변수의 변화 원인이 모형 내에 있는 변수
 
+### **4-1. 선형 회귀(LinearRegression)**
+- 실제값과 예측값의 RSS(Residual Sum of Squares)를 최소화 해 OLS(Ordinary Least Squares) 추정 방식으로 구현
+- 규제를 적용하지 **않은** 모델
+- 코드
+```Python
+from sklearn.linear_model import linearRegression
+
+model = LinearRegression(n_jobs = -1) # CPU Core를 있는 대로 모두 사용하겠다.
+model.fit(X_train, y_train) # 학습
+pred = model.predict(X_test) # 예측
+mean_squared_error(pred, y_test) # 평가
+```
+
+### **4-2. 규제(Regularization)**
+- 학습이 과적합되는 것을 방지하고자 일종의 penalty를 부여하는 것
+#### **1) L1 규제**  
+- 가중치의 합을 더한 값에 규제 강도를 곱하여 오차에 더한 값($Error=MSE+α|w|$)
+- 어떤 가중치는 실제로 0이 됨 -> 모델에서 완전히 제외되는 특성이 발생할 수 있음
+- **라쏘(Lasso)** 모델에 적용됨
+- 코드
+```Python
+from sklearn.linear_model import Lasso
+
+model = Lasso(alpha = alpha) # alpha: 규제 강도
+model.fit(X_train, y_train) # 학습
+pred = model.predict(X_test) # 예측
+mean_squared_error(pred, y_test) # 평가
+```
+
+#### **2) L2 규제**  
+- 각 가중치 제곱의 합에 규제 강도를 곱한 값($Error=MSE+αw^2$)
+- 규제 강도를 크게 하면 가중치가 더 많이 감소되고(규제를 중요시함), 규제 강도를 작게 하면 가중치가 증가함(규제를 중요시하지 않음)
+- **릿지(Ridge)** 모델에 적용됨
+- 코드
+```Python
+from sklearn.linear_model import Ridge
+
+model = Ridge(alpha = alpha) # 규제 강도
+model.fit(X_train, y_train) # 학습
+pred = model.predict(X_test) # 예측
+mean_squared_error(pred, y_test) # 평가
+```
+
+#### **3) 엘라스틱넷(ElasticNet)**
+- L1 규제 + L2 규제
+- l1_ratio(default: 0.5) 속성 -> 규제 강도 조정
+  - l1_ratio = 0: L2 규제만
+  - l1_ratio =1: L1 규제만
+  - 0 < l1_ratio < 1: L1 and L2 규제(혼합 사용)
+- 코드
+```Python
+from sklearn.linear_model import ElasticNet
+
+model = ElasticNet(alpha = alpha,l1_ratio = l1_ratio) # 규제 강도
+model.fit(X_train, y_train) # 학습
+pred = model.predict(X_test) # 예측
+mean_squared_error(pred, y_test) # 평가
+```
+
+### **4-3. 다항 회귀**
+- 다항식의 계수 간 상호작용을 통해 새로운 feature를 생성
+- 데이터가 단순한 직선의 형태가 아닌 비선형 형태여도 선형 모델을 사용하여 비선형 데이터를 학습할 수 있음
+  - 원본 데이터: 선형 관계가 x
+  - 새로운 feature: 선형 관계
+- 특성의 거듭제곱을 새로운 특성으로 추가하고 확장된 특성을 포함한 데이터 셋에 선형 모델을 학습
+- 코드
+```Python
+from sklearn.preprocessing import PolynomialFeatures
+
+poly = PolyNomialFeatures(degree = 2, include_bias = False)
+# degree: 차수(몇 제곱까지 갈 것인가)
+# include_bias: 절편 포함 여부 선택
+```
+
+#### **파이프라인(PipeLine)**
+- 여러 가지 방법들을 융합하는 기법
+- 코드
+```Python
+from sklearn.pipeline import make_pipeline
+
+# 파이프라인 생성(모델 객체 생성)
+pipeline = make_pipeline(
+  StandarsScaler(),
+  ElasticNet(alpha = 0.1, l1_ratio = 0.2)
+)
+
+pipeline_pred = pipeline.fit(X_train, y_train).predict(X_test) # 학습, 예측
+mean_squared_error(pipeline_pred,y_test) # 평가
+```
