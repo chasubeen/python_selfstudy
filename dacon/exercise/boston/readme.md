@@ -158,3 +158,15 @@ pipeline = make_pipeline(
 pipeline_pred = pipeline.fit(X_train, y_train).predict(X_test) # 학습, 예측
 mean_squared_error(pipeline_pred,y_test) # 평가
 ```
+
+# **5. 결과 정리**
+- 4가지 버전으로 실험 수행  
+
+|   |**ver1**|**ver2**|**ver3**|**ver4**|
+|----------|-------|-------|-------|-------|
+|**feature 전처리**|표준화|정규화|표준화|정규화|
+|**target 로그 변환**|X|X|O|O|
+
+- 각 과정마다 최적의 회귀모형이 다른 것을 확인할 수 있었음
+  - 4가지 버전 중 최적 회귀모형: ver3의 Polynomial Lasso(alpha = 100)
+  -  
