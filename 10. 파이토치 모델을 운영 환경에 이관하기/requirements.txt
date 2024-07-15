@@ -1,7 +1,0 @@
-torch==1.5.0
-torchvision==0.6.0
-Pillow==6.2.2
-Flask==1.1.1
-jinja2==3.0.3
-itsdangerous==1.1.0
-werkzeug==1.0.1
